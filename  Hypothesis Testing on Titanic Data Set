@@ -1,0 +1,364 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "8917b3d7",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:27.807734Z",
+     "iopub.status.busy": "2024-07-06T19:07:27.807319Z",
+     "iopub.status.idle": "2024-07-06T19:07:28.674866Z",
+     "shell.execute_reply": "2024-07-06T19:07:28.673283Z"
+    },
+    "papermill": {
+     "duration": 0.877784,
+     "end_time": "2024-07-06T19:07:28.678765",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:27.800981",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/kaggle/input/titanic2/train.csv\n",
+      "/kaggle/input/titanic2/test.csv\n",
+      "/kaggle/input/titanic2/gender_submission.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "# This Python 3 environment comes with many helpful analytics libraries installed\n",
+    "# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n",
+    "# For example, here's several helpful packages to load\n",
+    "\n",
+    "import numpy as np # linear algebra\n",
+    "import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n",
+    "\n",
+    "# Input data files are available in the read-only \"../input/\" directory\n",
+    "# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n",
+    "\n",
+    "import os\n",
+    "for dirname, _, filenames in os.walk('/kaggle/input'):\n",
+    "    for filename in filenames:\n",
+    "        print(os.path.join(dirname, filename))\n",
+    "\n",
+    "# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n",
+    "# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "7ce85a6f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:28.688967Z",
+     "iopub.status.busy": "2024-07-06T19:07:28.688472Z",
+     "iopub.status.idle": "2024-07-06T19:07:28.731301Z",
+     "shell.execute_reply": "2024-07-06T19:07:28.730277Z"
+    },
+    "papermill": {
+     "duration": 0.05079,
+     "end_time": "2024-07-06T19:07:28.734033",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:28.683243",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "\n",
+    "\n",
+    "train = pd.read_csv('/kaggle/input/titanic2/train.csv')\n",
+    "test = pd.read_csv('/kaggle/input/titanic2/test.csv')\n",
+    "gender = pd.read_csv('/kaggle/input/titanic2/gender_submission.csv')\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "e62343f7",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:28.744655Z",
+     "iopub.status.busy": "2024-07-06T19:07:28.743925Z",
+     "iopub.status.idle": "2024-07-06T19:07:28.765364Z",
+     "shell.execute_reply": "2024-07-06T19:07:28.764238Z"
+    },
+    "papermill": {
+     "duration": 0.029535,
+     "end_time": "2024-07-06T19:07:28.767951",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:28.738416",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "final_df = pd.concat([train,test]).sample(1309)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "de782c8d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:28.778634Z",
+     "iopub.status.busy": "2024-07-06T19:07:28.777880Z",
+     "iopub.status.idle": "2024-07-06T19:07:28.786285Z",
+     "shell.execute_reply": "2024-07-06T19:07:28.785240Z"
+    },
+    "papermill": {
+     "duration": 0.016565,
+     "end_time": "2024-07-06T19:07:28.788803",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:28.772238",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[ 9.    9.   22.   70.   20.   26.   31.   30.   44.   36.   55.   21.\n",
+      " 34.5  20.    4.    0.83 27.   51.   18.   57.   21.   45.   50.   38.\n",
+      " 47.  ]\n"
+     ]
+    }
+   ],
+   "source": [
+    "pop = final_df['Age'].dropna()\n",
+    "sample_age = pop.sample(25).values\n",
+    "print(sample_age)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "47221002",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:28.799098Z",
+     "iopub.status.busy": "2024-07-06T19:07:28.798449Z",
+     "iopub.status.idle": "2024-07-06T19:07:28.803360Z",
+     "shell.execute_reply": "2024-07-06T19:07:28.802019Z"
+    },
+    "papermill": {
+     "duration": 0.012593,
+     "end_time": "2024-07-06T19:07:28.805744",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:28.793151",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# H0 -> The mean age is 35\n",
+    "# H1 -> The mean is less than 35"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "e6da202c",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:28.815985Z",
+     "iopub.status.busy": "2024-07-06T19:07:28.815580Z",
+     "iopub.status.idle": "2024-07-06T19:07:29.786154Z",
+     "shell.execute_reply": "2024-07-06T19:07:29.784992Z"
+    },
+    "papermill": {
+     "duration": 0.978632,
+     "end_time": "2024-07-06T19:07:29.788694",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:28.810062",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "ShapiroResult(statistic=0.9779505729675293, pvalue=0.8417043685913086)\n"
+     ]
+    }
+   ],
+   "source": [
+    "# check for normality using Shapiro Wilk test\n",
+    "from scipy.stats import shapiro\n",
+    "\n",
+    "shapiro_age = shapiro(sample_age)\n",
+    "\n",
+    "print(shapiro_age)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "0ad29016",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:29.799848Z",
+     "iopub.status.busy": "2024-07-06T19:07:29.799176Z",
+     "iopub.status.idle": "2024-07-06T19:07:29.804317Z",
+     "shell.execute_reply": "2024-07-06T19:07:29.803247Z"
+    },
+    "papermill": {
+     "duration": 0.013381,
+     "end_time": "2024-07-06T19:07:29.806816",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:29.793435",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "pop_mean = 35\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "4d3907a9",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:29.818094Z",
+     "iopub.status.busy": "2024-07-06T19:07:29.816983Z",
+     "iopub.status.idle": "2024-07-06T19:07:29.828616Z",
+     "shell.execute_reply": "2024-07-06T19:07:29.827354Z"
+    },
+    "papermill": {
+     "duration": 0.019963,
+     "end_time": "2024-07-06T19:07:29.831248",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:29.811285",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "t-statistic: -0.9980534928093086\n",
+      "p-value: 0.164105243258721\n"
+     ]
+    }
+   ],
+   "source": [
+    "import scipy.stats as stats\n",
+    "\n",
+    "t_statistic, p_value = stats.ttest_1samp(sample_age, pop_mean)\n",
+    "\n",
+    "print(\"t-statistic:\", t_statistic)\n",
+    "print(\"p-value:\", p_value/2)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "08ebe6ad",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-06T19:07:29.841843Z",
+     "iopub.status.busy": "2024-07-06T19:07:29.841460Z",
+     "iopub.status.idle": "2024-07-06T19:07:29.847363Z",
+     "shell.execute_reply": "2024-07-06T19:07:29.846234Z"
+    },
+    "papermill": {
+     "duration": 0.014118,
+     "end_time": "2024-07-06T19:07:29.849887",
+     "exception": false,
+     "start_time": "2024-07-06T19:07:29.835769",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Fail to reject the null hypothesis.\n"
+     ]
+    }
+   ],
+   "source": [
+    "alpha = 0.05\n",
+    "\n",
+    "if p_value < alpha:\n",
+    "    print(\"Reject the null hypothesis.\")\n",
+    "else:\n",
+    "    print(\"Fail to reject the null hypothesis.\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "datasetId": 5041831,
+     "sourceId": 8458659,
+     "sourceType": "datasetVersion"
+    }
+   ],
+   "dockerImageVersionId": 30732,
+   "isGpuEnabled": false,
+   "isInternetEnabled": false,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.13"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 5.491645,
+   "end_time": "2024-07-06T19:07:30.375988",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2024-07-06T19:07:24.884343",
+   "version": "2.5.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
